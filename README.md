@@ -4,3 +4,4 @@
 Participating members
 - HansBlackCat
 - dongwook0826
+- WG-Go
