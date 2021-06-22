@@ -1,0 +1,3 @@
+[submodule "HansBlackCat/SCSC2021SImpl"]
+	path = HansBlackCat/SCSC2021SImpl
+	url = https://github.com/HansBlackCat/SCSC2021SImpl.git
