@@ -7,6 +7,6 @@ Participating members
 - WG-Go
 
 ## Main Problems
-### [Problem 00](./Problem00.md)
+### [Problem 00 - Mother of all source codes](./Problem00.md)
 
 ## Sub Problems
