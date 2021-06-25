@@ -5,6 +5,9 @@ Participating members
 - HansBlackCat
 - dongwook0826
 - WG-Go
+- Myeongseop Jeon
+- ehden23
+- 이영준 Lee Young June
 
 ## Tutorial
 
