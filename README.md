@@ -8,6 +8,8 @@ Participating members
 - Myeongseop Jeon
 - ehden23
 - 이영준 Lee Young June
+- stern1203
+- YiTan
 
 ## Tutorial
 
