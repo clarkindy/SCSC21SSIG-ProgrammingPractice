@@ -3,7 +3,7 @@ module RBTree
 , contains
 , insert
 , delete
-, genRBTree
+, buildRBTree
 ) where
 
 data NodeColor = Black | Red deriving (Eq, Show)
@@ -14,7 +14,7 @@ data RBTree a = Nil
 
 showWithDepth :: Show a => RBTree a -> String -> String
 showWithDepth Nil _ = ""
-showWithDepth (Node e c left right) dep =
+showWithDepth (Node e c left right) dep = -- preorder traversal
     dep ++ " " ++ show e ++ " (" ++ show c ++ ")\n"
         ++ showWithDepth left (dep ++ "-")
         ++ showWithDepth right (dep ++ "+")
@@ -40,29 +40,14 @@ setRed :: RBTree a -> RBTree a
 setRed Nil = Nil
 setRed (Node e _ left right) = Node e Red left right
 
-type Direction = Bool
-
-toRight :: Bool
-toRight = True
-
-toLeft :: Bool
-toLeft = False
-
-rotate :: RBTree a -> Direction -> RBTree a
-rotate (Node e c (Node le lc ll lr) r) toRight
-    = Node le lc ll (Node e c lr r)
-rotate (Node e c l (Node re rc rl rr)) toLeft
-    = Node re rc (Node e c l rl) rr
-rotate tree _ = tree
-
 -- search
 
-contains :: Ord a => a -> RBTree a -> Bool
-contains x Nil = False
-contains x (Node e c left right)
+contains :: Ord a => RBTree a -> a -> Bool
+contains Nil _ = False
+contains (Node e c left right) x
     | x == e    = True
-    | x < e     = contains x left
-    | otherwise = contains x right
+    | x < e     = left `contains` x
+    | otherwise = right `contains` x
 
 -- insert
 
@@ -96,7 +81,7 @@ modifyInsert (Node g Black
             (setBlack uncleTree)
     | otherwise =
         modifyInsert (Node g Black
-            (rotate (Node p Red pleft (Node e Red left right)) toLeft)
+            (Node e Red (Node p Red pleft left) right)
             uncleTree)
 modifyInsert (Node g Black
     uncleTree
@@ -108,7 +93,7 @@ modifyInsert (Node g Black
     | otherwise =
         modifyInsert (Node g Black
             uncleTree
-            (rotate (Node p Red (Node e Red left right) pright) toRight))
+            (Node e Red left (Node p Red right pright)))
 modifyInsert (Node g Black
     uncleTree
     (Node p Red pleft (Node e Red left right)))
@@ -122,8 +107,8 @@ modifyInsert (Node g Black
             (Node e Red left right)
 modifyInsert tree = tree
 
-genRBTree :: Ord a => [a] -> RBTree a
-genRBTree = foldr insert Nil
+buildRBTree :: Ord a => [a] -> RBTree a
+buildRBTree = foldr insert Nil
 
 -- delete
 -- todo: implement deleting functions
@@ -158,6 +143,14 @@ delete' x (Node e c left right)
                     (Node e c delLeft right, leftmost)
             deleteMin Nil = (Nil, Nothing) in
                 (Node min c left delMinRight, True)
+
+type Direction = Bool
+
+toRight :: Bool
+toRight = True
+
+toLeft :: Bool
+toLeft = False
 
 modifyDelete :: (Ord a) => Bool -> RBTree a -> Direction -> (RBTree a, Bool)
 modifyDelete True tree _ = (tree, True)
