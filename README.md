@@ -17,8 +17,10 @@ Participating members
 
 ## Main Problems
 
-### [Problem 00 - Mother of all source codes](./Problem00.md)
+### [Problem 00 - Mother of all source codes](./__MainProblem__/Problem00.md)
 
-### [Problem 01 - Red-Black Tree](./Problem01.md)
+### [Problem 01 - Red-Black Tree](./__MainProblem__/Problem01.md)
 
 ## Sub Problems
+
+### [Sub Problem 01 - Exact Cover Problem & Knuth's DLX](./__SubProblem__/SubProblem01.md)

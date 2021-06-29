@@ -17,10 +17,10 @@
 
 실제로 RB tree는 데이터의 삽입, 검색, 삭제 모두 O(log n)의 시간을 보장한다. 이번 문제에서는 자신이 쓰고 싶은 언어 무엇으로든 이 RB tree를 구현하고, 직접 일련의 데이터를 삽입, 검색, 그리고 삭제해보자. BST 및 RB tree에 대한 상세한 이론적 배경 및 알고리즘은 아래의 참고자료를 참고하라.
 
-### 참고자료
+## 참고자료
 - https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
 - https://en.wikipedia.org/wiki/Binary_search_tree
 
-### 이미지 출처
+## 이미지 출처
 - https://www.tutorialspoint.com/data_structures_algorithms/avl_tree_algorithm.htm
 - https://en.wikipedia.org/wiki/Red%E2%80%93black_tree#/media/File:Red-black_tree_example.svg
