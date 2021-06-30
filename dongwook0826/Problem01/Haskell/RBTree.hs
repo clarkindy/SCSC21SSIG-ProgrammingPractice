@@ -51,14 +51,14 @@ contains (Node e c left right) x
 
 -- insert
 
-insert :: Ord a => a -> RBTree a -> RBTree a
-insert x tree = setBlack $ insert' x tree
+insert :: Ord a => RBTree a -> a -> RBTree a
+insert tree = setBlack . insert' tree
 
-insert' :: Ord a => a -> RBTree a -> RBTree a
-insert' x Nil = Node x Red Nil Nil
-insert' x (Node e c left right)
-    | x < e     = modifyInsert $ Node e c (insert' x left) right
-    | otherwise = modifyInsert $ Node e c left (insert' x right)
+insert' :: Ord a => RBTree a -> a -> RBTree a
+insert' Nil x = Node x Red Nil Nil
+insert' (Node e c left right) x
+    | x < e     = modifyInsert $ Node e c (insert' left x) right
+    | otherwise = modifyInsert $ Node e c left (insert' right x)
 
 modifyInsert :: RBTree a -> RBTree a
 modifyInsert (Node g Black
@@ -108,27 +108,34 @@ modifyInsert (Node g Black
 modifyInsert tree = tree
 
 buildRBTree :: Ord a => [a] -> RBTree a
-buildRBTree = foldr insert Nil
+buildRBTree = foldl insert Nil
 
 -- delete
--- todo: implement deleting functions
 
-delete :: Ord a => a -> RBTree a -> RBTree a
-delete _ Nil = Nil
-delete x (Node e c Nil Nil) -- root
+delete :: Ord a => RBTree a -> a -> RBTree a
+delete Nil _ = Nil
+delete (Node e c Nil Nil) x -- root
     | x == e    = Nil
     | otherwise = Node e c Nil Nil
-delete x tree = fst $ delete' x tree
+delete tree x = fst $ delete' tree x
 
-delete' :: Ord a => a -> RBTree a -> (RBTree a, Bool)
-delete' _ Nil = (Nil, True)
-delete' x (Node e c left right)
+type Direction = Bool
+
+toRight :: Direction
+toRight = True
+
+toLeft :: Direction
+toLeft = False
+
+delete' :: Ord a => RBTree a -> a -> (RBTree a, Bool)
+delete' Nil _ = (Nil, True)
+delete' (Node e c left right) x
     | x < e     = let
-        (deletedTree, wellDeleted) = delete' x left
+        (deletedTree, wellDeleted) = delete' left x
         (modifiedTree, allModified) = modifyDelete wellDeleted (Node e c deletedTree right) toLeft in 
             (modifiedTree, wellDeleted || allModified)
     | x > e     = let
-        (deletedTree, wellDeleted) = delete' x right
+        (deletedTree, wellDeleted) = delete' right x
         (modifiedTree, allModified) = modifyDelete wellDeleted (Node e c left deletedTree) toRight in
             (modifiedTree, wellDeleted || allModified)
     | otherwise {- x == e -} = case (c, left, right) of
@@ -136,48 +143,44 @@ delete' x (Node e c left right)
         (Black, Nil, Node y _ _ _) -> (Node y Black Nil Nil, True)
         (Black, Node y _ _ _, Nil) -> (Node y Black Nil Nil, True)
         (_, _, _) -> let
-            (delMinRight, Just min) = deleteMin right
-            deleteMin (Node e c left right)
-                | left == Nil = (right, Just e)
-                | otherwise = let (delLeft, leftmost) = deleteMin left in
-                    (Node e c delLeft right, leftmost)
-            deleteMin Nil = (Nil, Nothing) in
-                (Node min c left delMinRight, True)
+            (delMinRight, delDone, Just min) = deleteMin right in
+                modifyDelete delDone (Node min c left delMinRight) toRight
 
-type Direction = Bool
+deleteMin :: Ord a => RBTree a -> (RBTree a, Bool, Maybe a)
+deleteMin Nil = (Nil, True, Nothing)
+deleteMin (Node e c left right)
+    | left == Nil = case c of
+        Black -> (setBlack right, right /= Nil, Just e)
+        Red   -> (Nil, True, Just e)
+    | otherwise = let
+        (delLeft, delDone, justMin) = deleteMin left
+        (delTree, wellDeleted) = modifyDelete delDone (Node e c delLeft right) toLeft in
+            (delTree, wellDeleted, justMin)
 
-toRight :: Bool
-toRight = True
-
-toLeft :: Bool
-toLeft = False
-
-modifyDelete :: (Ord a) => Bool -> RBTree a -> Direction -> (RBTree a, Bool)
+modifyDelete :: Bool -> RBTree a -> Direction -> (RBTree a, Bool)
 modifyDelete True tree _ = (tree, True)
 modifyDelete False (Node e c left (Node s sc sleft sright)) toLeft =
     case (c, sc, colorOf sleft, colorOf sright) of
         (Black, Black, Black, Black) ->
             (Node e c left (Node s Red sleft sright), False)
-        (Black, Red, _, _) ->
-            (Node s Black (Node e Black left $ setRed sleft) sright, True)
+        (_, Red, _, _) ->
+            (Node s Black (fst $ modifyDelete False (Node e Red left sleft) toLeft) sright, True)
         (Red, _, Black, Black) ->
-            (Node e Black left (fst $ modifyDelete False (Node s Red sleft sright) toLeft), True)
+            (Node e Black left $ Node s Red sleft sright, True)
         (_, Black, Red, Black) -> let Node n nc nleft nright = sleft in
             (Node n c (Node e Black left nleft) (Node s Black nright sright), True)
         (_, Black, _, Red) ->
             (Node s c (Node e Black left sleft) $ setBlack sright, True)
-        (_, _, _, _) -> error "unexpected coloring case..."
 modifyDelete False (Node e c (Node s sc sleft sright) right) toRight =
     case (c, sc, colorOf sleft, colorOf sright) of
         (Black, Black, Black, Black) ->
             (Node e c (Node s Red sleft sright) right, False)
-        (Black, Red, _, _) ->
-            (Node s Black sleft (Node e Black right $ setRed sright), True)
+        (_, Red, _, _) ->
+            (Node s Black sleft (fst $ modifyDelete False (Node e Red sright right) toRight), True)
         (Red, _, Black, Black) ->
-            (Node e Black (fst $ modifyDelete False (Node s Red sleft sright) toRight) right, True)
+            (Node e Black (Node s Red sleft sright) right, True)
         (_, Black, Black, Red) -> let Node n nc nleft nright = sright in
             (Node n c (Node s Black sleft nleft) (Node e Black nright right), True)
         (_, Black, Red, _) ->
             (Node s c (setBlack sleft) $ Node e Black sright right, True)
-        (_, _, _, _) -> error "unexpected coloring case..."
 modifyDelete False tree _ = (tree, True)

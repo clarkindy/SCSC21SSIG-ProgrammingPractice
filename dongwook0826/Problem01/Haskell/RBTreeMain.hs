@@ -16,7 +16,9 @@ main :: IO ()
 main = let myTree = buildRBTree myList in do
     print myTree
     print $ map (myTree `contains`) mySearchList
-    print $ foldr delete myTree myDelList1
-    print $ foldr delete myTree myDelList2
+    putStrLn "\ndel list 1\n"
+    print $ foldl delete myTree myDelList1
+    putStrLn "del list 2\n"
+    print $ foldl delete myTree myDelList2
     putStrLn "re-building...\n"
     print $ buildRBTree $ myDelList1 ++ myDelList2
